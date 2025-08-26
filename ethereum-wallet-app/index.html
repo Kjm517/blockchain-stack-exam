@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereum Wallet Interface</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="src/css/style.css">
+    <script src="src/scripts/script.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card fade-in">
+            <div class="header">
+                <i class="fas fa-wallet"></i>
+                <h1>Ethereum Wallet</h1>
+                <p>Connect your wallet to start using the Ethereum blockchain.</p>
+            </div>
+            <div class="content">
+                <button id="connectBtn" class="connect-btn">
+                    <i class="fas fa-wallet" style="margin-right: 8px;"></i>
+                    Connect Wallet
+                </button>
+
+                <div id="walletInfo" class="wallet-info" style="display: none;">
+                    <div id="connectionStatus" class="connection-status">
+                        <span class="status-indicator"></span>
+                        <strong>Wallet Connected</strong>
+                    </div>
+
+                    <div class="wallet-address" id="walletAddress"></div>
+
+                    <div class="balance-container">
+                        <div class="balance" id="balance">0.0000 ETH</div>
+                        <div class="balance-label">Current Balance</div>
+                    </div>
+
+                    <div id="errorMessage" class="error" style="display: none;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span id="errorText"></span>
+                    </div>
+
+                    <div id="statsSection" class="stats-grid" style="display: none;">
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalTransactions">23</div>
+                            <div class="stat-label">Transactions</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalSent">8.22</div>
+                            <div class="stat-label">ETH Sent</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="totalReceived">11.96</div>
+                            <div class="stat-label">ETH Received</div>
+                        </div>
+                    </div>
+
+                    <div class="section" id="transactionsSection" style="display: none;">
+                        <div class="demo-badge">
+                            <i class="fas fa-eye"></i>
+                            Demo Data
+                        </div>
+
+                        <h2 class="section-title">
+                            <i class="fas fa-exchange-alt"></i>
+                            Recent Transactions
+                        </h2>
+
+                        <div id="loadingTransactions" class="loading" style="display: none;">
+                            <div class="spinner"></div>
+                            <p>Loading transactions...</p>
+                        </div>
+
+                        <div id="transactionsList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
