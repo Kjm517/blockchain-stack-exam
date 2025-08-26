@@ -1,4 +1,24 @@
+
+declare const ethers: any;
+declare global {
+    interface Window { ethereum: any }
+}
+
 class EthereumWalletInterface {
+    provider: any;
+    signer: any;
+    userAddress: string | null;
+    transactions: any[];
+    connectBtn!: HTMLButtonElement;
+    walletInfo!: HTMLElement;
+    walletAddress!: HTMLElement;
+    balance!: HTMLElement;
+    errorMessage!: HTMLElement;
+    errorText!: HTMLElement;
+    transactionsSection!: HTMLElement;
+    loadingTransactions!: HTMLElement;
+    transactionsList!: HTMLElement;
+    statsSection!: HTMLElement;
     constructor() {
         this.provider = null;
         this.signer = null;
@@ -8,16 +28,16 @@ class EthereumWalletInterface {
     }
 
     init() {
-        this.connectBtn = document.getElementById('connectBtn');
-        this.walletInfo = document.getElementById('walletInfo');
-        this.walletAddress = document.getElementById('walletAddress');
-        this.balance = document.getElementById('balance');
-        this.errorMessage = document.getElementById('errorMessage');
-        this.errorText = document.getElementById('errorText');
-        this.transactionsSection = document.getElementById('transactionsSection');
-        this.loadingTransactions = document.getElementById('loadingTransactions');
-        this.transactionsList = document.getElementById('transactionsList');
-        this.statsSection = document.getElementById('statsSection');
+        this.connectBtn = document.getElementById('connectBtn') as HTMLButtonElement;
+        this.walletInfo = document.getElementById('walletInfo') as HTMLElement;
+        this.walletAddress = document.getElementById('walletAddress') as HTMLElement;
+        this.balance = document.getElementById('balance') as HTMLElement;
+        this.errorMessage = document.getElementById('errorMessage') as HTMLElement;
+        this.errorText = document.getElementById('errorText') as HTMLElement;
+        this.transactionsSection = document.getElementById('transactionsSection') as HTMLElement;
+        this.loadingTransactions = document.getElementById('loadingTransactions') as HTMLElement;
+        this.transactionsList = document.getElementById('transactionsList') as HTMLElement;
+        this.statsSection = document.getElementById('statsSection') as HTMLElement;
 
         this.walletInfo.style.display = 'none';
         this.transactionsSection.style.display = 'none';
@@ -55,7 +75,8 @@ class EthereumWalletInterface {
     }
 
     async checkConnection() {
-        if (typeof window.ethereum !== 'undefined') {
+        console.log("isConnect=", window.ethereum.isConnected());
+        if (window.ethereum && window.ethereum.isConnected()) {
             try {
                 const accounts = await window.ethereum.request({ method: 'eth_accounts' });
                 if (accounts.length > 0) {
@@ -68,11 +89,11 @@ class EthereumWalletInterface {
 
                     setTimeout(() => {
                         // static transactions (demo data)
-                        this.loadStaticTransactions();
-
-                        // dynamic transactions
-                        // this.loadDynamicTransactions();
+                        // this.loadStaticTransactions();
                     }, 500);
+
+                    // dynamic transactions
+                    this.loadDynamicTransactions();
                 } else {
                     this.resetInterface();
                 }
@@ -115,12 +136,11 @@ class EthereumWalletInterface {
             this.connectBtn.disabled = false;
 
             setTimeout(() => {
-                // static transactions (demo data)
-                this.loadStaticTransactions();
-
-                // Dynamic transactions (real blockchain data)
-                // this.loadDynamicTransactions();
+                // this.loadStaticTransactions();
             }, 500);
+
+            // Dynamic transactions
+            this.loadDynamicTransactions();
 
         } catch (error) {
             this.handleError('Failed to connect wallet', error);
@@ -133,7 +153,7 @@ class EthereumWalletInterface {
         this.signer = await this.provider.getSigner();
         this.userAddress = await this.signer.getAddress();
 
-        window.ethereum.on('accountsChanged', (accounts) => {
+        window.ethereum.on('accountsChanged', (accounts: string[]) => {
             if (accounts.length === 0) {
                 this.disconnect();
             } else {
@@ -170,8 +190,13 @@ class EthereumWalletInterface {
     loadStaticTransactions() {
         this.transactionsSection.style.display = 'block';
         this.loadingTransactions.style.display = 'block';
+        this.transactionsList.innerHTML = '';
 
         setTimeout(() => {
+            if (!this.userAddress) {
+                this.loadingTransactions.style.display = 'none';
+                return;
+            }
             this.displayStaticTransactions();
             this.updateStaticStats();
             this.loadingTransactions.style.display = 'none';
@@ -253,41 +278,26 @@ class EthereumWalletInterface {
     
 
     // DYNAMIC TRANSACTIONS (REAL BLOCKCHAIN DATA)
-    /*
     async loadDynamicTransactions() {
         if (!this.provider || !this.userAddress) {
             console.log('Provider or user address not available');
             return;
         }
     
-        // Show the transactions section and the loading screen
         this.transactionsSection.style.display = 'block';
         this.loadingTransactions.style.display = 'block';
         this.transactionsList.innerHTML = '';
     
         try {
-            console.log('Starting transaction loading...');
-    
-            const timeoutPromise = new Promise((_, reject) =>
-                setTimeout(() => reject(new Error('Transaction loading timeout')), 8000)
-            );
-    
-            const transactions = await Promise.race([
-                this.fetchTransactionHistory(),
-                timeoutPromise
-            ]);
-    
-            console.log(`Found ${transactions.length} transactions`);
+            const transactions = await this.fetchTransactionHistory();
             this.transactions = transactions;
-    
-        } catch (error) {
-            console.log('Transaction loading failed or timed out:', error.message);
+        } catch (error: any) {
+            console.log('Transaction loading failed:', error?.message);
             this.transactions = [];
         }
     
-        // Hide the loading screen after loading is done
         this.loadingTransactions.style.display = 'none';
-    
+     
         if (this.transactions.length > 0) {
             this.displayDynamicTransactions(this.transactions.slice(0, 10));
         } else {
@@ -298,7 +308,6 @@ class EthereumWalletInterface {
     }
 
     async fetchTransactionHistory() {
-        // Double-check provider availability
         if (!this.provider) {
             throw new Error('Provider not available');
         }
@@ -314,12 +323,10 @@ class EthereumWalletInterface {
             throw error;
         }
 
-        const blocksToCheck = 30; // Reduced for better performance and reliability
+        const blocksToCheck = 30; 
 
         try {
-            // Check recent blocks for transactions involving this address
             for (let i = 0; i < blocksToCheck; i++) {
-                // Check if provider is still available (in case of disconnect during fetch)
                 if (!this.provider) {
                     console.log('Provider disconnected during fetch, stopping');
                     break;
@@ -332,8 +339,9 @@ class EthereumWalletInterface {
 
                     if (block && block.transactions) {
                         for (const tx of block.transactions) {
-                            if (tx.from?.toLowerCase() === this.userAddress.toLowerCase() ||
-                                tx.to?.toLowerCase() === this.userAddress.toLowerCase()) {
+                            const userAddr = this.userAddress?.toLowerCase();
+                            if (userAddr && (tx.from?.toLowerCase() === userAddr ||
+                                tx.to?.toLowerCase() === userAddr)) {
 
                                 transactions.push({
                                     hash: tx.hash,
@@ -346,29 +354,28 @@ class EthereumWalletInterface {
                             }
                         }
                     }
-                } catch (blockError) {
-                    console.log(`Error fetching block ${blockNumber}:`, blockError.message);
-                    continue; // Skip this block and continue
+                } catch (blockError: any) {
+                    console.log(`Error fetching block ${blockNumber}:`, blockError?.message);
+                    continue;
                 }
 
-                // If we found enough transactions, break early
                 if (transactions.length >= 10) break;
             }
 
-            // Sort transactions by block number (most recent first)
             return transactions.sort((a, b) => b.blockNumber - a.blockNumber);
 
         } catch (error) {
             console.error('Error fetching transaction history:', error);
             return [];
         }
-    } */
+    }
 
-    displayDynamicTransactions(transactions) {
+    displayDynamicTransactions(transactions: any[]) {
         this.transactionsList.innerHTML = transactions.map((tx, index) => {
             const value = ethers.formatEther(tx.value);
             const date = new Date(tx.timestamp * 1000).toLocaleString();
-            const isOutgoing = tx.from.toLowerCase() === this.userAddress.toLowerCase();
+            const userAddr = this.userAddress?.toLowerCase();
+            const isOutgoing = userAddr ? (tx.from.toLowerCase() === userAddr) : false;
 
             return `
                 <div class="transaction-item" style="animation-delay: ${index * 0.1}s;">
@@ -403,45 +410,33 @@ class EthereumWalletInterface {
             <div style="text-align: center; padding: 40px 20px; color: #718096;">
                 <i class="fas fa-receipt" style="font-size: 3rem; margin-bottom: 16px; opacity: 0.5;"></i>
                 <h3 style="font-size: 1.2rem; margin-bottom: 8px; color: #4a5568;">No Recent Transactions</h3>
-                <p>No transactions found in the last 30 blocks.</p>
-                <p style="margin-top: 8px; font-size: 0.9rem; opacity: 0.8;">
-                    This could mean:
-                </p>
-                <ul style="text-align: left; max-width: 300px; margin: 12px auto 0; font-size: 0.85rem; opacity: 0.7; line-height: 1.4;">
-                    <li>• This wallet hasn't been used recently</li>
-                    <li>• Your transactions are in older blocks</li>
-                    <li>• You're on a test network with limited activity</li>
-                </ul>
-                <p style="margin-top: 16px; font-size: 0.85rem; opacity: 0.6;">
-                    <i class="fas fa-info-circle"></i> 
-                    For complete history, use a block explorer like Etherscan
-                </p>
+                <p>No transactions found</p>
             </div>
         `;
     }
 
-    updateDynamicStats(transactions) {
-        const sentTxs = transactions.filter(tx =>
-            tx.from.toLowerCase() === this.userAddress.toLowerCase()
-        );
-        const receivedTxs = transactions.filter(tx =>
-            tx.to?.toLowerCase() === this.userAddress.toLowerCase()
-        );
+    updateDynamicStats(transactions: any[]) {
+        const user = this.userAddress?.toLowerCase();
+        if (!user) return;
+        
 
-        const totalSent = sentTxs.reduce((sum, tx) =>
-            sum + parseFloat(ethers.formatEther(tx.value)), 0
-        );
-        const totalReceived = receivedTxs.reduce((sum, tx) =>
-            sum + parseFloat(ethers.formatEther(tx.value)), 0
-        );
-
-        document.getElementById('totalTransactions').textContent = transactions.length;
-        document.getElementById('totalSent').textContent = totalSent.toFixed(4);
-        document.getElementById('totalReceived').textContent = totalReceived.toFixed(4);
-
+        // check how much user sends and received
+        const sumEther = (txs: any[]) =>
+            txs.reduce((sum, tx) => sum + Number(ethers.formatEther(tx.value)), 0);
+    
+        const sent = transactions.filter(tx => tx.from?.toLowerCase() === user);
+        const received = transactions.filter(tx => tx.to?.toLowerCase() === user);
+    
+        const totalSent = sumEther(sent);
+        const totalReceived = sumEther(received);
+    
+        document.getElementById('totalTransactions')!.textContent = String(transactions.length);
+        document.getElementById('totalSent')!.textContent = totalSent.toFixed(4);
+        document.getElementById('totalReceived')!.textContent = totalReceived.toFixed(4);
+    
         this.statsSection.style.display = 'grid';
         this.statsSection.classList.add('fade-in');
-    }
+    }    
 
     disconnect() {
         this.connectBtn.disabled = true;
@@ -456,6 +451,7 @@ class EthereumWalletInterface {
             this.walletInfo.style.display = 'none';
             this.transactionsSection.style.display = 'none';
             this.statsSection.style.display = 'none';
+            this.transactionsList.innerHTML = '';
 
             this.connectBtn.innerHTML = '<i class="fas fa-wallet" style="margin-right: 8px;"></i>Connect Wallet';
             this.connectBtn.classList.remove('connected');
@@ -465,7 +461,7 @@ class EthereumWalletInterface {
         }, 300);
     }
 
-    showError(message) {
+    showError(message: string) {
         this.errorText.textContent = message;
         this.errorMessage.style.display = 'flex';
         this.errorMessage.classList.add('fade-in');
@@ -476,7 +472,7 @@ class EthereumWalletInterface {
         this.errorMessage.classList.remove('fade-in');
     }
 
-    handleError(message, error) {
+    handleError(message: string, error: any) {
         console.error(message, error);
         let errorText = message;
 
