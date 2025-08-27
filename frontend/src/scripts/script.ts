@@ -89,11 +89,11 @@ class EthereumWalletInterface {
 
                     setTimeout(() => {
                         // static transactions (demo data)
-                        // this.loadStaticTransactions();
+                        this.loadStaticTransactions();
                     }, 500);
 
                     // dynamic transactions
-                    this.loadDynamicTransactions();
+                    // this.loadDynamicTransactions();
                 } else {
                     this.resetInterface();
                 }
@@ -136,11 +136,11 @@ class EthereumWalletInterface {
             this.connectBtn.disabled = false;
 
             setTimeout(() => {
-                // this.loadStaticTransactions();
+                this.loadStaticTransactions();
             }, 500);
 
             // Dynamic transactions
-            this.loadDynamicTransactions();
+            // this.loadDynamicTransactions();
 
         } catch (error) {
             this.handleError('Failed to connect wallet', error);
