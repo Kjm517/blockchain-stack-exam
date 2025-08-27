@@ -44,7 +44,6 @@ async function main() {
         const balance = await publicClient.getBalance({ address: deployer });
         console.log("Account balance:", formatEther(balance), "ETH");
         
-        // Deploy contract using viem + Hardhat artifacts
         console.log("Deploying MyToken contract...");
         const artifact = await hre.artifacts.readArtifact("MyToken");
         const txHash = await walletClient.deployContract({
@@ -56,7 +55,6 @@ async function main() {
         const contractAddress = receipt.contractAddress;
         console.log("Contract deployed at:", contractAddress);
         
-        // Test the contract
         console.log("\nTesting deployed contract...");
         const name = await publicClient.readContract({
             address: contractAddress,
