@@ -1,9 +1,3 @@
-# blockchain-stack-exam
-
-
-## 🚧 Status
-Project is currently under maintenance and still in progress.  
-Updates and improvements are ongoing in this READ.me file
 # Web3 Ethereum Project
 
 A full-stack Web3 application with wallet integration, blockchain data display, and custom token contracts.
