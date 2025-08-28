@@ -2,4 +2,4 @@
 
 
 ## 🚧 Status
-Updates and improvements are ongoing in this READ.me file
+Project is finish but updates and improvements are ongoing in this READ.me file
